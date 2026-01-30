@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--text);
+            display: grid;
+            grid-template-areas:
+                "header header"
+                "nav    nav"
+                "main   aside"
+                "footer footer";
+            grid-template-columns: 1fr;
+            grid-template-rows: auto auto 1fr auto;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        /* Header */
+        header {
+            grid-area: header;
+            background: linear-gradient(135deg, #ffffff, #052634);
+            padding: 20px;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        /* Navegação */
+        nav {
+            grid-area: nav;
+            background: var(--card);
+            padding: 1rem;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column; /* 🔹 corrige alinhamento */
+            gap: 0.5rem;
+        }
+
+        /* Main */
+        main {
+            grid-area: main;
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: 12px;
+            line-height: 1.6;
+
+            display: flex;              /* 🔹 centralização real */
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Footer */
+        footer {
+            grid-area: footer;
+            padding: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--muted);
+            background: linear-gradient(135deg, #ffffff, #052634);
+            border-radius: 12px;
+        }
+
+        /* Hover moderno */
+        nav:hover,
+        main:hover {
+            outline: 1px solid var(--primary);
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            body {
+                grid-template-areas:
+                    "header"
+                    "nav"
+                    "main"
+                    "footer";
+                grid-template-columns: 1fr;
+            }
+
+            main {
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>Jogo da Memória</header>
+    <nav>
+        <h2>O que é um jogo da memória?</h2>
+        <div>
+            <p>Jogo da memória é um jogo que consiste em encontrar pares de combinações em meio a cartas viradas para baixo. Você deve memorizá-las e acertar até vencer o jogo</p>
+        </div>
+    </nav>
+    <main>
+        <h2>Jogo da Memória</h2>
+        <div id="game" style="
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            max-width: 400px;
+            margin: auto;
+            justify-content: center;
+            align-content: center;
+        "></div>
+    </main>
+    <footer>
+        Criado por Diogo Henrique
+        <div>
+            Redes sociais:
+            <a href="https://github.com/diogohab">Github,</a>
+            <a href="https://www.linkedin.com/in/perfildhab">LinkedIn</a>
+        </div>
+        Email para contato: diogohab@gmail.com
+    </footer>
+    <script>
+        const game = document.getElementById("game");
+
+        const symbols = ["🍎", "🍌", "🍇", "🍉", "🍓", "🍒"];
+        const cards = [...symbols, ...symbols];
+
+        let firstCard = null;
+        let secondCard = null;
+        let lock = false;
+
+        // embaralhar
+        cards.sort(() => Math.random() - 0.5);
+
+        // criar cartas
+        cards.forEach(symbol => {
+            const card = document.createElement("button");
+
+            card.textContent = "?";
+            card.dataset.symbol = symbol;
+
+            // 🔹 FORMATO QUADRADO E RESPONSIVO
+            card.style.aspectRatio = "1 / 1";
+            card.style.width = "100%";
+            card.style.maxWidth = "80px";
+
+            // 🔹 CENTRALIZA CONTEÚDO
+            card.style.display = "flex";
+            card.style.alignItems = "center";
+            card.style.justifyContent = "center";
+
+            // 🔹 ESTILO
+            card.style.fontSize = "2rem";
+            card.style.cursor = "pointer";
+            card.style.borderRadius = "12px";
+            card.style.border = "none";
+            card.style.background = "#052634";
+            card.style.color = "white";
+
+            card.addEventListener("click", () => flip(card));
+            game.appendChild(card);
+        });
+
+        function flip(card) {
+            if (lock) return;
+            if (card === firstCard) return;
+            if (card.dataset.matched) return;
+
+            card.textContent = card.dataset.symbol;
+
+            if (!firstCard) {
+                firstCard = card;
+                return;
+            }
+
+            secondCard = card;
+            checkMatch();
+        }
+
+        function checkMatch() {
+            if (firstCard.dataset.symbol === secondCard.dataset.symbol) {
+                firstCard.dataset.matched = "true";
+                secondCard.dataset.matched = "true";
+                reset();
+                checkWin();
+            } else {
+                lock = true;
+                setTimeout(() => {
+                    firstCard.textContent = "?";
+                    secondCard.textContent = "?";
+                    reset();
+                }, 1000);
+            }
+        }
+
+        function reset() {
+            firstCard = null;
+            secondCard = null;
+            lock = false;
+        }
+
+        function checkWin() {
+            const matched = document.querySelectorAll("[data-matched]").length;
+
+            if (matched === cards.length) {
+                setTimeout(() => {
+                    alert("🎉 Você venceu!");
+
+                    // ⏳ pequeno respiro antes de reiniciar
+                    setTimeout(() => {
+                        location.reload(); // 🔄 recarrega e reembaralha
+                    }, 600);
+
+                }, 300);
+            }
+        }
+    </script>
+</body>
+</html>
